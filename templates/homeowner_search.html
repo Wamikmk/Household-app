@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Search Services{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home_owner_dashboard', homeowner_id=home_owner.id) }}">Home Owner Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#homeOwnerNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="homeOwnerNavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home_owner_dashboard', homeowner_id=home_owner.id) }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('search_services', homeowner_id=home_owner.id) }}">Search Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('view_public_requests', homeowner_id=home_owner.id) }}">Public Requests</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">Welcome, {{ home_owner.user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>Search Services</h2>
+    <form method="POST" action="{{ url_for('search_services', homeowner_id=home_owner.id) }}">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="service_name" class="form-label">Service Name</label>
+                <input type="text" class="form-control" id="service_name" name="service_name" placeholder="Enter service name">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="pincode" class="form-label">Pincode</label>
+                <input type="text" class="form-control" id="pincode" name="pincode" placeholder="Enter pincode">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="Enter address">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <h3 class="mt-4">Available Services</h3>
+    {% if services %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Service Name</th>
+                        <th>Description</th>
+                        <th>Base Price</th>
+                        <th>Time Required</th>
+                        <th>Service Provider</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                        {% for provider in service.service_providers %}
+                            {% if provider.is_approved %}
+                            <tr>
+                                <td>{{ service.service_name }}</td>
+                                <td>{{ service.service_description }}</td>
+                                <td>${{ service.base_price }}</td>
+                                <td>{{ service.time_required }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#providerModal{{ service.id }}{{ provider.id }}">
+                                        View Provider Details
+                                    </button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#requestModal{{ service.id }}{{ provider.id }}">
+                                        Request Service
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Provider Details Modal -->
+                            <div class="modal fade" id="providerModal{{ service.id }}{{ provider.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Service Provider Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h6>Provider Name: {{ provider.user_name }}</h6>
+                                            <p><strong>Address:</strong> {{ provider.address }}</p>
+                                            <p><strong>Experience:</strong> {{ provider.serviceProvider_experience }} years</p>
+                                            <p><strong>Average Rating:</strong> {{ "%.1f"|format(provider.average_rating) }}/5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Request Service Modal -->
+                            <div class="modal fade" id="requestModal{{ service.id }}{{ provider.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Request Service</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form method="POST" action="{{ url_for('request_service', service_id=service.id, homeowner_id=session['user_id']) }}">
+                                                <input type="hidden" name="service_provider_id" value="{{ provider.id }}">
+                                                <div class="mb-3">
+                                                    <label for="description{{ service.id }}{{ provider.id }}" class="form-label">Your Requirements/Instructions</label>
+                                                    <textarea class="form-control" id="description{{ service.id }}{{ provider.id }}" name="description" rows="3" required></textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="requestType{{ service.id }}{{ provider.id }}" class="form-label">Request Type</label>
+                                                    <select class="form-select" id="requestType{{ service.id }}{{ provider.id }}" name="request_type" required>
+                                                        <option value="Private">Private Request (Selected Provider Only)</option>
+                                                        <option value="Public">Public Request (All Providers)</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Submit Request</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">No services found matching your criteria.</div>
+    {% endif %}
+</div>
+{% endblock %} 
