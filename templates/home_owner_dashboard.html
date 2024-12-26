@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Home Owner Dashboard{% endblock %}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home_owner_dashboard', homeowner_id=home_owner.id) }}">Home Owner Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#homeOwnerNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="homeOwnerNavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('home_owner_dashboard', homeowner_id=home_owner.id) }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('search_services', homeowner_id=home_owner.id) }}">Search Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('view_public_requests', homeowner_id=home_owner.id) }}">
+                        Public Requests
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">Welcome, {{ home_owner.user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3">Available Services</h2>
+            <div class="row">
+                {% if services %}
+                    {% for service in services %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">{{ service.service_name }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ service.service_description }}</p>
+                                    <p><strong>Base Price:</strong> ${{ service.base_price }}</p>
+                                    <p><strong>Time Required:</strong> {{ service.time_required }}</p>
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestModal{{ service.id }}">
+                                        Request Service
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Request Modal -->
+                        <div class="modal fade" id="requestModal{{ service.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Request Service: {{ service.service_name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="serviceRequestForm{{ service.id }}" method="POST" action="{{ url_for('request_service', service_id=service.id, homeowner_id=home_owner.id) }}">
+                                            <div class="mb-3">
+                                                <label class="form-label">Service Description</label>
+                                                <p class="form-text">{{ service.service_description }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Base Price</label>
+                                                <p class="form-text">${{ service.base_price }}</p>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="serviceProvider{{ service.id }}" class="form-label">Select Service Provider</label>
+                                                <select class="form-select" id="serviceProvider{{ service.id }}" name="service_provider_id" required>
+                                                    <option value="">Choose a service provider...</option>
+                                                    {% for provider in service.service_providers %}
+                                                        {% if provider.is_approved %}
+                                                            <option value="{{ provider.id }}">
+                                                                {{ provider.user_name }} (Experience: {{ provider.serviceProvider_experience }} years)
+                                                                {% if provider.average_rating > 0 %}
+                                                                    - Rating: {{ "%.1f"|format(provider.average_rating) }}/5
+                                                                {% endif %}
+                                                            </option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="description{{ service.id }}" class="form-label">Your Requirements/Instructions</label>
+                                                <textarea class="form-control" id="description{{ service.id }}" name="description" rows="3" required></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="requestType{{ service.id }}" class="form-label">Request Type</label>
+                                                <select class="form-select" id="requestType{{ service.id }}" name="request_type" required>
+                                                    <option value="Private">Private Request (Selected Provider Only)</option>
+                                                    <option value="Public">Public Request (All Providers)</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            No services available with approved service providers at the moment.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Service History Section -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-3">My Service History</h2>
+            {% if my_service_history %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>Service Provider</th>
+                                <th>Request Date</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in my_service_history %}
+                                <tr>
+                                    <td>{{ request.service.service_name if request.service else 'N/A' }}</td>
+                                    <td>{{ request.service_provider.user_name }}</td>
+                                    <td>{{ request.date_created.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge {% if request.status == 'Pending' %}bg-warning
+                                                        {% elif request.status == 'Accepted' %}bg-success
+                                                        {% elif request.status == 'Completed' %}bg-info
+                                                        {% else %}bg-secondary{% endif %}">
+                                            {{ request.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ request.description }}</td>
+                                    <td>
+                                        {% if request.status == 'Accepted' %}
+                                            <form action="{{ url_for('close_request', request_id=request.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-success btn-sm">Complete Request</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if request.status == 'Completed' %}
+                                            <span class="badge bg-info">Completed</span>
+                                            <form action="{{ url_for('delete_request', request_id=request.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
+                                        {% endif %}
+                                        {% if request.status == 'Pending' %}
+                                            <a href="{{ url_for('edit_request', request_id=request.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                            <form action="{{ url_for('delete_request', request_id=request.id) }}" method="POST" style="display: inline;">
+                                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    You haven't made any service requests yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // JavaScript to handle the request type selection
+    document.querySelectorAll('[id^="requestType"]').forEach(select => {
+        select.addEventListener('change', function() {
+            const serviceId = this.id.replace('requestType', '');
+            const providerSelect = document.getElementById('serviceProvider' + serviceId);
+            
+            if (this.value === 'Public') {
+                providerSelect.disabled = true;
+                providerSelect.required = false;
+            } else {
+                providerSelect.disabled = false;
+                providerSelect.required = true;
+            }
+        });
+    });
+</script>
+{% endblock %}
