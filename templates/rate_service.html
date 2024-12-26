@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Service{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Rate Service Provider</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Service: {{ service_request.service.service_name }}</h5>
+                    <p>Provider: {{ service_request.service_provider.user_name }}</p>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating (out of 5)</label>
+                            <select class="form-select" id="rating" name="rating" required>
+                                <option value="">Select rating...</option>
+                                <option value="1">1 - Poor</option>
+                                <option value="2">2 - Fair</option>
+                                <option value="3">3 - Good</option>
+                                <option value="4">4 - Very Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="review" class="form-label">Review</label>
+                            <textarea class="form-control" id="review" name="review" rows="3" required 
+                                    placeholder="Please share your experience with this service provider"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Rating</button>
+                        <a href="{{ url_for('home_owner_dashboard', homeowner_id=session['user_id']) }}" 
+                           class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
