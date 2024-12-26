@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Household Services{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5">
+        <div class="col-md-6">
+            <h1 class="display-4 mb-3">Welcome to Household Services</h1>
+            <p class="lead text-muted">
+                Your one-stop solution for all household services. Find trusted professionals for your home maintenance needs.
+            </p>
+            <div class="mt-4">
+                <a href="{{ url_for('user_login') }}" class="btn btn-primary me-2">User Login</a>
+                <a href="{{ url_for('admin_login') }}" class="btn btn-outline-secondary">Admin Login</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/hero-image.jpg') }}" 
+                 alt="Household Services" 
+                 class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <!-- Services Preview -->
+    <div class="row py-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Our Services</h2>
+            <p class="text-muted">Professional services for your home</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="{{ url_for('static', filename='images/plumbing.jpg') }}" 
+                     class="card-img-top" 
+                     alt="Plumbing Services">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Plumbing</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="{{ url_for('static', filename='images/electrical.jpg') }}" 
+                     class="card-img-top" 
+                     alt="Electrical Services">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Electrical</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="{{ url_for('static', filename='images/cleaning.jpg') }}" 
+                     class="card-img-top" 
+                     alt="Cleaning Services">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Cleaning</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
