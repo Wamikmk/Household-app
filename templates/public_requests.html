@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Public Requests{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('service_provider_dashboard', provider_id=provider.id) }}">
+            <i class="bi bi-tools me-2"></i>Service Provider Dashboard
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#serviceProviderNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="serviceProviderNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('service_provider_dashboard', provider_id=provider.id) }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('public_requests', provider_id=provider.id) }}">Public Requests</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3">Welcome, {{ provider.user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>Available Public Requests</h2>
+    
+    {% if public_requests %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Home Owner</th>
+                    <th>Description</th>
+                    <th>Date Posted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in public_requests %}
+                <tr>
+                    <td>{{ request.service.service_name }}</td>
+                    <td>{{ request.homeowner.user_name }}</td>
+                    <td>{{ request.description }}</td>
+                    <td>{{ request.date_created.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <form action="{{ url_for('submit_bid', request_id=request.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Submit Bid</button>
+                        </form>
+                        <form action="{{ url_for('decline_request', request_id=request.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No public requests available.</div>
+    {% endif %}
+</div>
+{% endblock %} 
