@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Search{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="adminNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin_analytics') }}">Analytics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin_search') }}">Search</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>Search</h2>
+    
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{{ url_for('admin_search') }}" method="GET" class="d-flex gap-2">
+                <input type="text" class="form-control" name="q" value="{{ search_query }}" 
+                       placeholder="Search for services, users, or requests...">
+                <button class="btn btn-primary" type="submit">Search</button>
+                {% if search_query %}
+                    <a href="{{ url_for('admin_search') }}" class="btn btn-secondary">Clear Search</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if search_query %}
+        <!-- Services Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Services</h5>
+            </div>
+            <div class="card-body">
+                {% if search_results.services %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Service Name</th>
+                                <th>Description</th>
+                                <th>Base Price</th>
+                                <th>Time Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in search_results.services %}
+                            <tr>
+                                <td>{{ service.service_name }}</td>
+                                <td>{{ service.service_description }}</td>
+                                <td>${{ service.base_price }}</td>
+                                <td>{{ service.time_required }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No services found.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Home Owners Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Home Owners</h5>
+            </div>
+            <div class="card-body">
+                {% if search_results.homeowners %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Address</th>
+                                <th>Pincode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for homeowner in search_results.homeowners %}
+                            <tr>
+                                <td>{{ homeowner.user_name }}</td>
+                                <td>{{ homeowner.address }}</td>
+                                <td>{{ homeowner.pincode }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No home owners found.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Service Providers Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Service Providers</h5>
+            </div>
+            <div class="card-body">
+                {% if search_results.service_providers %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Service</th>
+                                <th>Experience</th>
+                                <th>Rating</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for provider in search_results.service_providers %}
+                            <tr>
+                                <td>{{ provider.user_name }}</td>
+                                <td>{{ provider.service.service_name if provider.service else 'N/A' }}</td>
+                                <td>{{ provider.serviceProvider_experience }} years</td>
+                                <td>{{ "%.1f"|format(provider.average_rating) }}/5</td>
+                                <td>
+                                    <span class="badge {% if provider.is_approved %}bg-success{% else %}bg-warning{% endif %}">
+                                        {{ 'Approved' if provider.is_approved else 'Pending' }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No service providers found.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Service Requests Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Service Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if search_results.requests %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Service</th>
+                                <th>Home Owner</th>
+                                <th>Service Provider</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in search_results.requests %}
+                            <tr>
+                                <td>{{ request.id }}</td>
+                                <td>{{ request.service.service_name if request.service else 'N/A' }}</td>
+                                <td>{{ request.homeowner.user_name }}</td>
+                                <td>{{ request.service_provider.user_name }}</td>
+                                <td>{{ request.request_type }}</td>
+                                <td>
+                                    <span class="badge {% if request.status == 'Pending' %}bg-warning
+                                        {% elif request.status == 'Accepted' %}bg-success
+                                        {% elif request.status == 'Rejected' %}bg-danger
+                                        {% elif request.status == 'Completed' %}bg-info
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ request.status }}
+                                    </span>
+                                </td>
+                                <td>{{ request.date_created.strftime('%Y-%m-%d') if request.date_created else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No service requests found.</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
