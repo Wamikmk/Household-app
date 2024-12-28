@@ -93,4 +93,4 @@ Special thanks to the App dev-I team at IIT Madras for guidance throughout this 
 
 ---
 
-*This project was developed as part of Application development-I at IIT Madras.
+This project was developed as part of Application development-I coursework at IIT Madras.
