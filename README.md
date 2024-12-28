@@ -89,7 +89,7 @@ Through this project, I gained practical experience in:
 - Implement chat functionality between users
 
 ## Acknowledgments
-Special thanks to [Professor/Mentor name] for guidance throughout this project development.
+Special thanks to the App dev-I team at IIT Madras for guidance throughout this project development.
 
 ---
 
