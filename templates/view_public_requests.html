@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Public Requests{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home_owner_dashboard', homeowner_id=homeowner_id) }}">Home Owner Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#homeOwnerNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="homeOwnerNavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home_owner_dashboard', homeowner_id=homeowner_id) }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('view_public_requests', homeowner_id=homeowner_id) }}">
+                        Public Requests
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('logout') }}" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>My Public Requests</h2>
+    
+    {% if public_requests %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Description</th>
+                    <th>Service Provider</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in public_requests %}
+                <tr>
+                    <td>{{ request.service.service_name }}</td>
+                    <td>{{ request.description }}</td>
+                    <td>{{ request.service_provider.user_name }}</td>
+                    <td>
+                        <span class="badge {% if request.status == 'Pending' %}bg-warning
+                                        {% elif request.status == 'Bid_Submitted' %}bg-info
+                                        {% elif request.status == 'Accepted' %}bg-success
+                                        {% elif request.status == 'Rejected' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                            {{ request.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if request.status == 'Bid_Submitted' %}
+                        <form action="{{ url_for('accept_bid', request_id=request.id, provider_id=request.serviceProvider_id) }}" method="POST">
+                            <button type="submit" class="btn btn-success btn-sm">Accept Bid</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">No public requests found.</div>
+    {% endif %}
+</div>
+{% endblock %} 
